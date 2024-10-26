@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Pet Depot Vue</title>
+        <!--VUE Import-->
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+        <!--Icons from Font awesome-->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+        />
+        
+    </head>
+
+    <body>
+        <div id="app">
+            <header>
+                <h1 v-text="sitename"></h1>
+                <button v-on:click="showCheckout">
+                    {{cartItemCount}}
+                    <span class="fas fa-cart-plus"></span>
+                    Checkout
+                </button>
+            </header>
+
+            <main>
+                <div v-if="showClass">
+                    <!--Displaying each Class-->
+                    <div v-for="Class in sortedClasses">
+                        <br />
+                        <!-- the code for the Class page -->
+                        <figure>
+                            <!-- bind 'src' attr to 'Class.image' in 'data' -->
+                            <img v-bind:src="Class.image" />
+                        </figure>
+                        <h2 v-text="Class.title"></h2>
+                        <p v-html="Class.description"></p>
+                        <!-- The double curly brackets is used instead of 'v-text' -->
+                        <p>Price: {{Class.price}}</p>
+                        <button v-on:click="addToCart(Class)" v-if="canAddToCart(Class)">
+                            Add to cart
+                        </button>
+                        <button disabled="disabled" v-else>Out of Stock</button>
+
+                        <!--Return count PER item in classes-->
+                        <span v-if="Class.availableInventory === cartCount(Class.id)"
+                            >All out!</span
+                        >
+                        <span v-else-if="Class.availableInventory - cartCount(Class.id) < 5">
+                            Only {{Class.availableInventory - cartCount(Class.id)}} left!
+                        </span>
+                        <span v-else>Buy now!</span>
+                    </div>
+                </div>
+                <div v-else>
+                    <!-- the code for the checkout page -->
+                    <h2>Checkout</h2>
+                    <p>
+                        <strong>First Name:</strong>
+                        <!-- This input field is bound to 'firstName' in the 'order' object -->
+                        <input v-model.trim="order.firstName" />
+                    </p>
+                    <p>
+                        <strong>Last Name:</strong>
+                        <!-- This input field is bound to 'lastName' in the 'order' object -->
+                        <input v-model.trim="order.lastName" />
+                    </p>
+                    <p><strong>Address:</strong> <input v-model="order.address" /></p>
+                    <p><strong>City:</strong> <input v-model="order.city" /></p>
+                    <p>
+                        <strong>State:</strong>
+                        <select v-model="order.state" class="form-control">
+                            <option disabled value="">Select State</option>
+                            <option v-bind:value="states.AD">AD</option>
+                            <option v-bind:value="states.DU">DU</option>
+                            <option v-bind:value="states.SH">SH</option>
+                            <option v-bind:value="states.AJ">AJ</option>
+                            <option v-bind:value="states.FJ">FJ</option>
+                            <option v-bind:value="states.RK">RK</option>
+                            <option v-bind:value="states.UQ">UQ</option>
+                        </select>
+                    </p>
+                    <p>
+                        <strong>Zip/Postal Code:</strong>
+                        <input v-model.number="order.zip" type="number" />
+                    </p>
+                    <p>
+                        <input
+                            type="checkbox"
+                            id="gift"
+                            value="true"
+                            v-model="order.gift"
+                            v-bind:true-value="order.sendGift"
+                            v-bind:false-value="order.dontSendGift"
+                        />
+                        <label for="gift">Ship As Gift?</label>
+                    </p>
+                    <p>
+                        <input type="radio" id="home" value="Home" v-model="order.method" />
+                        <label for="home">Home</label>
+                        <input type="radio" id="business" value="Business" v-model="order.method" />
+                        <label for="business">Business</label>
+                    </p>
+
+                    <h2>Order Information</h2>
+                    <p>First Name: {{order.firstName}}</p>
+                    <p>Last Name: {{order.lastName}}</p>
+                    <p>Address: {{order.address}}</p>
+                    <p>City: {{order.city}}</p>
+                    <p>Zip: {{order.zip}}</p>
+                    <p>State: {{order.state}}</p>
+                    <p>Gift? {{order.gift}}</p>
+                    <p>Method: {{order.method}}</p>
+
+                    <button v-on:click="submitForm">Place Order</button>
+                </div>
+            </main>
+        </div>
+
+        <script src="classes.js"></script>
+        <script type="text/javascript">
+            let webstore = new Vue({
+                // new app constructor
+                el: "#app", // el - element, mounting point selector
+                data: {
+                    // key 'sitename' matches value of v-text
+                    sitename: "Ara's Classes",
+                    classes: classes, // gets classes from Array in JS file
+                    cart: [], // Array for Shopping cart items
+                    showClass: true,
+                    order: {
+                        firstName: "",
+                        lastName: "",
+                        address: "",
+                        city: "",
+                        zip: "",
+                        state: "",
+                        method: "Home",
+                        sendGift: "Send as a gift",
+                        dontSendGift: "Do not send as a gift",
+                    },
+                    states: {
+                        AD: "Abu Dhabi",
+                        DU: "Dubai",
+                        SH: "Sharjah",
+                        AJ: "Ajman",
+                        FJ: "Fujairah",
+                        RK: "Ras Al Khaimah",
+                        UQ: "Umm Al Quwain",
+                    },
+                },
+                methods: {
+                    addToCart: function (Class) {
+                        // adds items to cart
+                        this.cart.push(Class.id);
+                    },
+                    showCheckout() {
+                        this.showClass = this.showClass ? false : true;
+                    },
+                    submitForm() {
+                        alert("Order submitted!");
+                    },
+                    canAddToCart: function (Class) {
+                        return Class.availableInventory > this.cartCount(Class.id);
+                    },
+                    cartCount(id) {
+                        let count = 0;
+                        for (let i = 0; i < this.cart.length; i++) {
+                            if (this.cart[i] === id) {
+                                count++;
+                            }
+                        }
+                        return count;
+                    },
+                },
+                computed: {
+                    cartItemCount: function () {
+                        // counts items in cart
+                        return this.cart.length || "";
+                    },
+                    itemsLeft() {
+                        return this.Class.availableInventory - this.cartItemCount;
+                    },
+                    sortedClasses() {
+                        // the comparison function that defines the order
+                        function compare(a, b) {
+                            if (a.price > b.price) return 1;
+                            if (a.price < b.price) return -1;
+                            return 0;
+                        }
+                        // sort the 'classes' array and return it
+                        return this.classes.sort(compare);
+                    },
+                },
+            });
+        </script>
+    </body>
+</html>
